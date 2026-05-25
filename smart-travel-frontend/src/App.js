@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Loader } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Loader, Sun, Moon, RotateCcw } from 'lucide-react';
 import EXIF from 'exif-js';
 
 function App() {
@@ -8,16 +8,38 @@ function App() {
   const [zile, setZile] = useState('');
   const [buget, setBuget] = useState('');
   const [stil, setStil] = useState('');
-  
   const [incarcare, setIncarcarcare] = useState(false);
-  const [rezultat, setRezultat] = useState('');
-  
   const [imaginePreview, setImaginePreview] = useState(null);
   const [imagineBase64, setImagineBase64] = useState('');
   
-  const [indiciiText, setIndiciiText] = useState('');
-  const [termenCautareHarta, setTermenCautareHarta] = useState('');
-  const [motorActiv, setMotorActiv] = useState('Google Gemini 2.5');
+  // State initialization directly from localStorage persistent storage
+  const [rezultat, setRezultat] = useState(() => localStorage.getItem('st_rezultat') || '');
+  const [indiciiText, setIndiciiText] = useState(() => localStorage.getItem('st_indicii') || '');
+  const [termenCautareHarta, setTermenCautareHarta] = useState(() => localStorage.getItem('st_harta') || '');
+  const [motorActiv, setMotorActiv] = useState(() => localStorage.getItem('st_motor') || 'Google Gemini 2.5');
+
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('st_tema') === 'dark';
+  });
+
+  // Layout presentation layer theme syncing
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-theme');
+      localStorage.setItem('st_tema', 'dark');
+    } else {
+      document.body.classList.remove('dark-theme');
+      localStorage.setItem('st_tema', 'light');
+    }
+  }, [isDarkMode]);
+
+  // Operational cache sync side effect handler
+  useEffect(() => {
+    localStorage.setItem('st_rezultat', rezultat);
+    localStorage.setItem('st_indicii', indiciiText);
+    localStorage.setItem('st_harta', termenCautareHarta);
+    localStorage.setItem('st_motor', motorActiv);
+  }, [rezultat, indiciiText, termenCautareHarta, motorActiv]);
 
   const convertesteInDecimal = (coordonate, referinta) => {
     if (!coordonate) return null;
@@ -58,6 +80,22 @@ function App() {
     }
   };
 
+  const reseteazaAplicatia = () => {
+    setRezultat('');
+    setIndiciiText('');
+    setTermenCautareHarta('');
+    setImaginePreview(null);
+    setImagineBase64('');
+    setDestinatie('');
+    setZile('');
+    setBuget('');
+    setStil('');
+    localStorage.removeItem('st_rezultat');
+    localStorage.removeItem('st_indicii');
+    localStorage.removeItem('st_harta');
+    localStorage.removeItem('st_motor');
+  };
+
   const cereItinerariu = async (e) => {
     e.preventDefault();
     setIncarcarcare(true);
@@ -65,8 +103,8 @@ function App() {
     setTermenCautareHarta('');
     
     // API endpoint toggle (Gemini / OpenAI)
-    const urlPlan = 'http://localhost:5000/api/plan';
-    // const urlPlan = 'http://localhost:5000/api/openai/plan';
+    // const urlPlan = 'http://localhost:5000/api/plan';
+    const urlPlan = 'http://localhost:5000/api/openai/plan';
 
     try {
       const raspuns = await fetch(urlPlan, {
@@ -102,8 +140,8 @@ function App() {
     setTermenCautareHarta('');
     
     // API endpoint toggle (Gemini / OpenAI)
-    const urlRecunoastere = 'http://localhost:5000/api/recunoastere';
-    // const urlRecunoastere = 'http://localhost:5000/api/openai/recunoastere';
+    // const urlRecunoastere = 'http://localhost:5000/api/recunoastere';
+    const urlRecunoastere = 'http://localhost:5000/api/openai/recunoastere';
 
     try {
       const raspuns = await fetch(urlRecunoastere, {
@@ -150,35 +188,53 @@ function App() {
         <h1>SmartTravelHub</h1>
         <p>Asistent inteligent pentru analiză vizuală și itinerarii turistice customizate</p>
         
-        {rezultat && !incarcare && !rezultat.includes("color:red") && (
-          <span style={{
-            position: 'absolute',
-            top: '25px',
-            right: '25px',
-            background: motorActiv.includes('OpenAI') ? '#10a37f' : '#1a73e8',
-            color: '#ffffff',
-            padding: '6px 14px',
-            borderRadius: '20px',
-            fontSize: '0.85rem',
-            fontWeight: '600',
-            boxShadow: motorActiv.includes('OpenAI') ? '0 2px 8px rgba(16,163,127,0.2)' : '0 2px 8px rgba(26,115,232,0.2)',
-            transition: 'all 0.3s ease'
-          }}>
-            Motor activ: {motorActiv}
-          </span>
-        )}
+        <div style={{ position: 'absolute', top: '25px', right: '25px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)} 
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', transition: 'all 0.2s' }}
+            title={isDarkMode ? "Comută la Light Mode" : "Comută la Dark Mode"}
+          >
+            {isDarkMode ? <Sun size={20} color="#ffb703" /> : <Moon size={20} />}
+          </button>
+
+          {rezultat && (
+            <button 
+              onClick={reseteazaAplicatia}
+              style={{ background: '#ea4335', border: 'none', borderRadius: '20px', padding: '0 14px', height: '40px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 5px rgba(234,67,53,0.2)' }}
+            >
+              <RotateCcw size={16} /> Reset
+            </button>
+          )}
+
+          {rezultat && !incarcare && !rezultat.includes("color:red") && (
+            <span style={{
+              background: motorActiv.includes('OpenAI') ? '#10a37f' : '#1a73e8',
+              color: '#ffffff',
+              padding: '0 14px',
+              borderRadius: '20px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              boxShadow: motorActiv.includes('OpenAI') ? '0 2px 8px rgba(16,163,127,0.15)' : '0 2px 8px rgba(26,115,232,0.15)'
+            }}>
+              {motorActiv}
+            </span>
+          )}
+        </div>
       </header>
 
       <div className="tabs-navigation">
         <button 
           className={`tab-btn ${activa === 'monumente' ? 'active' : ''}`} 
-          onClick={() => { setActiva('monumente'); setRezultat(''); setImaginePreview(null); setImagineBase64(''); setTermenCautareHarta(''); setIndiciiText(''); }}
+          onClick={() => { setActiva('monumente'); }}
         >
           Analiză Obiectiv
         </button>
         <button 
           className={`tab-btn ${activa === 'itinerariu' ? 'active' : ''}`} 
-          onClick={() => { setActiva('itinerariu'); setRezultat(''); setTermenCautareHarta(''); }}
+          onClick={() => { setActiva('itinerariu'); }}
         >
           Planificator Rută
         </button>
@@ -200,12 +256,12 @@ function App() {
             </div>
 
             <div className="input-group" style={{ marginTop: '24px' }}>
-              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px', color: '#202124' }}>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>
                 Indicii geografice sau detalii suplimentare (Opțional):
               </label>
               <textarea 
                 className="form-input"
-                style={{ width: '100%', minHeight: '65px', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.9rem' }}
+                style={{ width: '100%', minHeight: '65px', padding: '12px', borderRadius: '8px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.9rem' }}
                 placeholder="Exemplu: Fotografia este realizată în Transilvania / Stil arhitectural gotic / Lângă un râu din Budapesta..."
                 value={indiciiText}
                 onChange={(e) => setIndiciiText(e.target.value)}
