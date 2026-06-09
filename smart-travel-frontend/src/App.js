@@ -309,7 +309,7 @@ function App() {
                   style={{ border: 0, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                   loading="lazy"
                   allowFullScreen
-                  src={`http://googleusercontent.com/maps.google.com/maps?q=${encodeURIComponent(termenCautareHarta)}&t=&z=16&ie=UTF8&iwloc=B&output=embed`}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(termenCautareHarta)}&t=&z=16&ie=UTF8&iwloc=B&output=embed`}
                 ></iframe>
               </div>
             )}
