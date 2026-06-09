@@ -236,3 +236,18 @@ body.dark-theme .pastila-tag:hover {
     font-size: 1.75rem;
   }
 }
+
+
+.engine-gemini-btn.active {
+  background: #e8f0fe !important;
+  color: #1a73e8 !important;
+  border: 2px solid #1a73e8 !important;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.2);
+}
+
+.engine-openai-btn.active {
+  background: #e6f7ed !important;
+  color: #10a37f !important;
+  border: 2px solid #10a37f !important;
+  box-shadow: 0 2px 8px rgba(16, 163, 127, 0.2);
+}
