@@ -197,13 +197,29 @@ function App() {
       <div className="tabs-navigation">
         <button 
           className={`tab-btn ${activa === 'monumente' ? 'active' : ''}`} 
-          onClick={() => { setActiva('monumente'); }}
+          onClick={() => { 
+            setActiva('monumente'); 
+            // Reset complet la stări când schimbi tab-ul
+            setRezultat('');
+            setTermenCautareHarta('');
+            setImaginePreview(null);
+            setImagineBase64('');
+            setMotorActiv('');
+          }}
         >
           Analiză Obiectiv
         </button>
         <button 
           className={`tab-btn ${activa === 'itinerariu' ? 'active' : ''}`} 
-          onClick={() => { setActiva('itinerariu'); }}
+          onClick={() => { 
+            setActiva('itinerariu'); 
+            // Reset complet la stări când schimbi tab-ul
+            setRezultat('');
+            setTermenCautareHarta('');
+            setImaginePreview(null);
+            setImagineBase64('');
+            setMotorActiv('');
+          }}
         >
           Planificator Rută
         </button>
