@@ -12,17 +12,15 @@ function App() {
   const [imaginePreview, setImaginePreview] = useState(null);
   const [imagineBase64, setImagineBase64] = useState('');
   
-  // State initialization directly from localStorage persistent storage
-  const [rezultat, setRezultat] = useState(() => localStorage.getItem('st_rezultat') || '');
-  const [indiciiText, setIndiciiText] = useState(() => localStorage.getItem('st_indicii') || '');
-  const [termenCautareHarta, setTermenCautareHarta] = useState(() => localStorage.getItem('st_harta') || '');
-  const [motorActiv, setMotorActiv] = useState(() => localStorage.getItem('st_motor') || 'Google Gemini 2.5');
+  const [rezultat, setRezultat] = useState('');
+  const [indiciiText, setIndiciiText] = useState('');
+  const [termenCautareHarta, setTermenCautareHarta] = useState('');
+  const [motorActiv, setMotorActiv] = useState('');
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('st_tema') === 'dark';
   });
 
-  // Layout presentation layer theme syncing
   useEffect(() => {
     if (isDarkMode) {
       document.body.classList.add('dark-theme');
@@ -33,7 +31,6 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // Operational cache sync side effect handler
   useEffect(() => {
     localStorage.setItem('st_rezultat', rezultat);
     localStorage.setItem('st_indicii', indiciiText);
@@ -90,6 +87,7 @@ function App() {
     setZile('');
     setBuget('');
     setStil('');
+    setMotorActiv('');
     localStorage.removeItem('st_rezultat');
     localStorage.removeItem('st_indicii');
     localStorage.removeItem('st_harta');
@@ -102,9 +100,9 @@ function App() {
     setRezultat('');
     setTermenCautareHarta('');
     
-    // API endpoint toggle (Gemini / OpenAI)
-    // const urlPlan = 'http://localhost:5000/api/plan';
-    const urlPlan = 'http://localhost:5000/api/openai/plan';
+    const urlPlan = motorActiv === 'OpenAI GPT-4o' 
+      ? 'http://localhost:5000/api/openai/plan' 
+      : 'http://localhost:5000/api/plan';
 
     try {
       const raspuns = await fetch(urlPlan, {
@@ -117,12 +115,6 @@ function App() {
       if (raspuns.ok && date.text) {
         setRezultat(date.text);
         setTermenCautareHarta(destinatie);
-        
-        if (urlPlan.includes('openai')) {
-          setMotorActiv('OpenAI GPT-4o');
-        } else {
-          setMotorActiv('Google Gemini 2.5');
-        }
       } else {
         setRezultat('<p style="color:red">Serverul pentru generarea itinerariilor este momentan suprasolicitat. Vă rugăm să așteptați un minut înainte de a reîncerca.</p>');
       }
@@ -139,9 +131,9 @@ function App() {
     setRezultat('');
     setTermenCautareHarta('');
     
-    // API endpoint toggle (Gemini / OpenAI)
-    // const urlRecunoastere = 'http://localhost:5000/api/recunoastere';
-    const urlRecunoastere = 'http://localhost:5000/api/openai/recunoastere';
+    const urlRecunoastere = motorActiv === 'OpenAI GPT-4o' 
+      ? 'http://localhost:5000/api/openai/recunoastere' 
+      : 'http://localhost:5000/api/recunoastere';
 
     try {
       const raspuns = await fetch(urlRecunoastere, {
@@ -157,12 +149,6 @@ function App() {
         const potrivire = date.text.match(/<h3>(.*?)<\/h3>/);
         if (potrivire && potrivire[1]) {
           setTermenCautareHarta(potrivire[1]);
-        }
-        
-        if (urlRecunoastere.includes('openai')) {
-          setMotorActiv('OpenAI GPT-4o');
-        } else {
-          setMotorActiv('Google Gemini 2.5');
         }
       } else {
         setRezultat('<p style="color:red">Serverul este momentan ocupat din cauza limitărilor API. Încearcă din nou peste un minut.</p>');
@@ -204,23 +190,6 @@ function App() {
             >
               <RotateCcw size={16} /> Reset
             </button>
-          )}
-
-          {rezultat && !incarcare && !rezultat.includes("color:red") && (
-            <span style={{
-              background: motorActiv.includes('OpenAI') ? '#10a37f' : '#1a73e8',
-              color: '#ffffff',
-              padding: '0 14px',
-              borderRadius: '20px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              boxShadow: motorActiv.includes('OpenAI') ? '0 2px 8px rgba(16,163,127,0.15)' : '0 2px 8px rgba(26,115,232,0.15)'
-            }}>
-              {motorActiv}
-            </span>
           )}
         </div>
       </header>
@@ -268,8 +237,16 @@ function App() {
               />
             </div>
 
-            <button onClick={cereRecunoastere} disabled={!imagineBase64 || incarcare} className="btn-primary" style={{ marginTop: '20px' }}>
-              Pornește Analiza Vizuală
+            <div className="input-group" style={{ marginTop: '20px' }}>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>Model AI selectat pentru procesare:</label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="button" className={`tab-btn engine-gemini-btn ${motorActiv === 'Google Gemini 2.5' ? 'active' : ''}`} onClick={() => setMotorActiv('Google Gemini 2.5')} style={{ flex: 1, padding: '10px' }}>Google Gemini 2.5</button>
+                <button type="button" className={`tab-btn engine-openai-btn ${motorActiv === 'OpenAI GPT-4o' ? 'active' : ''}`} onClick={() => setMotorActiv('OpenAI GPT-4o')} style={{ flex: 1, padding: '10px' }}>OpenAI GPT-4o</button>
+              </div>
+            </div>
+
+            <button onClick={cereRecunoastere} disabled={!imagineBase64 || incarcare || !motorActiv} className="btn-primary" style={{ marginTop: '20px' }}>
+              {!motorActiv ? "Selectează un model AI de mai sus" : "Pornește Analiza Vizuală"}
             </button>
           </div>
         ) : (
@@ -295,8 +272,16 @@ function App() {
                 </div>
               </div>
 
-              <button type="submit" disabled={incarcare} className="btn-primary" style={{ marginTop: '12px' }}>
-                Generează Structura Ghidului
+              <div className="input-group" style={{ marginTop: '20px' }}>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>Model AI selectat pentru generare:</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button type="button" className={`tab-btn engine-gemini-btn ${motorActiv === 'Google Gemini 2.5' ? 'active' : ''}`} onClick={() => setMotorActiv('Google Gemini 2.5')} style={{ flex: 1, padding: '10px' }}>Google Gemini 2.5</button>
+                  <button type="button" className={`tab-btn engine-openai-btn ${motorActiv === 'OpenAI GPT-4o' ? 'active' : ''}`} onClick={() => setMotorActiv('OpenAI GPT-4o')} style={{ flex: 1, padding: '10px' }}>OpenAI GPT-4o</button>
+                </div>
+              </div>
+
+              <button type="submit" disabled={incarcare || !motorActiv} className="btn-primary" style={{ marginTop: '12px' }}>
+                {!motorActiv ? "Selectează un model AI de mai sus" : "Generează Structura Ghidului"}
               </button>
             </form>
           </div>
@@ -305,17 +290,17 @@ function App() {
         {incarcare && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '40px' }}>
             <Loader className="spin" size={32} color="var(--accent)" />
-            <p style={{ marginTop: '16px', color: 'var(--text-muted)' }}>Sistemul procesează cererea utilizând inteligența artificială...</p>
+            <p style={{ marginTop: '16px', color: 'var(--text-muted)' }}>Sistemul procesează cererea utilizând modelul selectat...</p>
           </div>
         )}
 
         {rezultat && !incarcare && (
-          <div className="dashboard-layout">
+          <div className="dashboard-layout" style={{ gridTemplateColumns: activa === 'monumente' && termenCautareHarta && !rezultat.includes("color:red") ? '1fr 1fr' : '1fr' }}>
             <div className="text-panel">
               <div dangerouslySetInnerHTML={{ __html: rezultat }} />
             </div>
             
-            {termenCautareHarta && !rezultat.includes("color:red") && (
+            {activa === 'monumente' && termenCautareHarta && !rezultat.includes("color:red") && (
               <div className="map-panel" style={{ height: '380px', position: 'sticky', top: '20px' }}>
                 <iframe
                   title="Google Maps Location"
@@ -324,7 +309,7 @@ function App() {
                   style={{ border: 0, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                   loading="lazy"
                   allowFullScreen
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(termenCautareHarta)}&t=&z=16&ie=UTF8&iwloc=B&output=embed`}
+                  src={`http://googleusercontent.com/maps.google.com/maps?q=${encodeURIComponent(termenCautareHarta)}&t=&z=16&ie=UTF8&iwloc=B&output=embed`}
                 ></iframe>
               </div>
             )}
