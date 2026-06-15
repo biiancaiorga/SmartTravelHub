@@ -94,6 +94,19 @@ function App() {
     localStorage.removeItem('st_motor');
   };
 
+  const resetTab = () => {
+    setRezultat('');
+    setTermenCautareHarta('');
+    setImaginePreview(null);
+    setImagineBase64('');
+    setMotorActiv('');
+    setDestinatie('');
+    setZile('');
+    setBuget('');
+    setStil('');
+    setIndiciiText('');
+  };
+
   const cereItinerariu = async (e) => {
     e.preventDefault();
     setIncarcarcare(true);
@@ -116,10 +129,10 @@ function App() {
         setRezultat(date.text);
         setTermenCautareHarta(destinatie);
       } else {
-        setRezultat('<p style="color:red">Serverul pentru generarea itinerariilor este momentan suprasolicitat. Vă rugăm să așteptați un minut înainte de a reîncerca.</p>');
+        setRezultat('<p class="eroare-text">Serverul pentru generarea itinerariilor este momentan suprasolicitat. Vă rugăm să așteptați un minut înainte de a reîncerca.</p>');
       }
     } catch (err) {
-      setRezultat('<p style="color:red">Eroare la conectarea cu serverul.</p>');
+      setRezultat('<p class="eroare-text">Eroare la conectarea cu serverul.</p>');
     } finally {
       setIncarcarcare(false);
     }
@@ -151,10 +164,10 @@ function App() {
           setTermenCautareHarta(potrivire[1]);
         }
       } else {
-        setRezultat('<p style="color:red">Serverul este momentan ocupat din cauza limitărilor API. Încearcă din nou peste un minut.</p>');
+        setRezultat('<p class="eroare-text">Serverul este momentan ocupat din cauza limitărilor API. Încearcă din nou peste un minut.</p>');
       }
     } catch (err) {
-      setRezultat('<p style="color:red">Eroare la analizarea imaginii.</p>');
+      setRezultat('<p class="eroare-text">Eroare la analizarea imaginii.</p>');
     } finally {
       setIncarcarcare(false);
     }
@@ -168,26 +181,25 @@ function App() {
     }
   };
 
+  const areHarta = activa === 'monumente' && termenCautareHarta && !rezultat.includes("eroare-text");
+
   return (
     <div className="app-container">
-      <header className="app-header" style={{ position: 'relative' }}>
+      <header className="app-header">
         <h1>SmartTravelHub</h1>
         <p>Asistent inteligent pentru analiză vizuală și itinerarii turistice customizate</p>
         
-        <div style={{ position: 'absolute', top: '25px', right: '25px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div className="header-controls">
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)} 
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', transition: 'all 0.2s' }}
+            className="btn-theme-toggle"
             title={isDarkMode ? "Comută la Light Mode" : "Comută la Dark Mode"}
           >
             {isDarkMode ? <Sun size={20} color="#ffb703" /> : <Moon size={20} />}
           </button>
 
           {rezultat && (
-            <button 
-              onClick={reseteazaAplicatia}
-              style={{ background: '#ea4335', border: 'none', borderRadius: '20px', padding: '0 14px', height: '40px', display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 5px rgba(234,67,53,0.2)' }}
-            >
+            <button onClick={reseteazaAplicatia} className="btn-reset">
               <RotateCcw size={16} /> Reset
             </button>
           )}
@@ -197,29 +209,13 @@ function App() {
       <div className="tabs-navigation">
         <button 
           className={`tab-btn ${activa === 'monumente' ? 'active' : ''}`} 
-          onClick={() => { 
-            setActiva('monumente'); 
-            // Reset complet la stări când schimbi tab-ul
-            setRezultat('');
-            setTermenCautareHarta('');
-            setImaginePreview(null);
-            setImagineBase64('');
-            setMotorActiv('');
-          }}
+          onClick={() => { setActiva('monumente'); resetTab(); }}
         >
           Analiză Obiectiv
         </button>
         <button 
           className={`tab-btn ${activa === 'itinerariu' ? 'active' : ''}`} 
-          onClick={() => { 
-            setActiva('itinerariu'); 
-            // Reset complet la stări când schimbi tab-ul
-            setRezultat('');
-            setTermenCautareHarta('');
-            setImaginePreview(null);
-            setImagineBase64('');
-            setMotorActiv('');
-          }}
+          onClick={() => { setActiva('itinerariu'); resetTab(); }}
         >
           Planificator Rută
         </button>
@@ -228,46 +224,45 @@ function App() {
       <main>
         {activa === 'monumente' ? (
           <div className="main-card">
-            <h2 style={{ marginTop: 0, fontSize: '1.5rem' }}>Recunoaștere Monument</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Sistemul va procesa detaliile structurale ale imaginii pentru identificarea monumentului.</p>
+            <h2 className="card-title">Recunoaștere Monument</h2>
+            <p className="card-subtitle">Sistemul va procesa detaliile structurale ale imaginii pentru identificarea monumentului.</p>
             
             <div className="upload-zone">
-              <input type="file" accept="image/*" onChange={proceseazaImagine} style={{ cursor: 'pointer' }} />
+              <input className="upload-input" type="file" accept="image/*" onChange={proceseazaImagine} />
               {imaginePreview && (
-                <div style={{ marginTop: '20px' }}>
-                  <img src={imaginePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }} />
+                <div className="preview-container">
+                  <img src={imaginePreview} alt="Preview" className="preview-img" />
                 </div>
               )}
             </div>
 
-            <div className="input-group" style={{ marginTop: '24px' }}>
-              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>
+            <div className="input-group input-group--top">
+              <label className="form-label">
                 Indicii geografice sau detalii suplimentare (Opțional):
               </label>
               <textarea 
-                className="form-input"
-                style={{ width: '100%', minHeight: '65px', padding: '12px', borderRadius: '8px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.9rem' }}
+                className="form-input form-textarea"
                 placeholder="Exemplu: Fotografia este realizată în Transilvania / Stil arhitectural gotic / Lângă un râu din Budapesta..."
                 value={indiciiText}
                 onChange={(e) => setIndiciiText(e.target.value)}
               />
             </div>
 
-            <div className="input-group" style={{ marginTop: '20px' }}>
-              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>Model AI selectat pentru procesare:</label>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="button" className={`tab-btn engine-gemini-btn ${motorActiv === 'Google Gemini 2.5' ? 'active' : ''}`} onClick={() => setMotorActiv('Google Gemini 2.5')} style={{ flex: 1, padding: '10px' }}>Google Gemini 2.5</button>
-                <button type="button" className={`tab-btn engine-openai-btn ${motorActiv === 'OpenAI GPT-4o' ? 'active' : ''}`} onClick={() => setMotorActiv('OpenAI GPT-4o')} style={{ flex: 1, padding: '10px' }}>OpenAI GPT-4o</button>
+            <div className="input-group">
+              <label className="form-label">Model AI selectat pentru procesare:</label>
+              <div className="engine-selector">
+                <button type="button" className={`tab-btn engine-btn engine-gemini-btn ${motorActiv === 'Google Gemini 2.5' ? 'active' : ''}`} onClick={() => setMotorActiv('Google Gemini 2.5')}>Google Gemini 2.5</button>
+                <button type="button" className={`tab-btn engine-btn engine-openai-btn ${motorActiv === 'OpenAI GPT-4o' ? 'active' : ''}`} onClick={() => setMotorActiv('OpenAI GPT-4o')}>OpenAI GPT-4o</button>
               </div>
             </div>
 
-            <button onClick={cereRecunoastere} disabled={!imagineBase64 || incarcare || !motorActiv} className="btn-primary" style={{ marginTop: '20px' }}>
+            <button onClick={cereRecunoastere} disabled={!imagineBase64 || incarcare || !motorActiv} className="btn-primary btn-primary--top">
               {!motorActiv ? "Selectează un model AI de mai sus" : "Pornește Analiza Vizuală"}
             </button>
           </div>
         ) : (
           <div className="main-card">
-            <h2 style={{ marginTop: 0, fontSize: '1.5rem' }}>Configurare Itinerariu</h2>
+            <h2 className="card-title">Configurare Itinerariu</h2>
             <form onSubmit={cereItinerariu}>
               <div className="input-group">
                 <input type="text" placeholder="Destinația" value={destinatie} onChange={e => setDestinatie(e.target.value)} required className="form-input" />
@@ -288,15 +283,15 @@ function App() {
                 </div>
               </div>
 
-              <div className="input-group" style={{ marginTop: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '8px' }}>Model AI selectat pentru generare:</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button type="button" className={`tab-btn engine-gemini-btn ${motorActiv === 'Google Gemini 2.5' ? 'active' : ''}`} onClick={() => setMotorActiv('Google Gemini 2.5')} style={{ flex: 1, padding: '10px' }}>Google Gemini 2.5</button>
-                  <button type="button" className={`tab-btn engine-openai-btn ${motorActiv === 'OpenAI GPT-4o' ? 'active' : ''}`} onClick={() => setMotorActiv('OpenAI GPT-4o')} style={{ flex: 1, padding: '10px' }}>OpenAI GPT-4o</button>
+              <div className="input-group input-group--top">
+                <label className="form-label">Model AI selectat pentru generare:</label>
+                <div className="engine-selector">
+                  <button type="button" className={`tab-btn engine-btn engine-gemini-btn ${motorActiv === 'Google Gemini 2.5' ? 'active' : ''}`} onClick={() => setMotorActiv('Google Gemini 2.5')}>Google Gemini 2.5</button>
+                  <button type="button" className={`tab-btn engine-btn engine-openai-btn ${motorActiv === 'OpenAI GPT-4o' ? 'active' : ''}`} onClick={() => setMotorActiv('OpenAI GPT-4o')}>OpenAI GPT-4o</button>
                 </div>
               </div>
 
-              <button type="submit" disabled={incarcare || !motorActiv} className="btn-primary" style={{ marginTop: '12px' }}>
+              <button type="submit" disabled={incarcare || !motorActiv} className="btn-primary btn-primary--small-top">
                 {!motorActiv ? "Selectează un model AI de mai sus" : "Generează Structura Ghidului"}
               </button>
             </form>
@@ -304,25 +299,25 @@ function App() {
         )}
 
         {incarcare && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '40px' }}>
+          <div className="loading-container">
             <Loader className="spin" size={32} color="var(--accent)" />
-            <p style={{ marginTop: '16px', color: 'var(--text-muted)' }}>Sistemul procesează cererea utilizând modelul selectat...</p>
+            <p className="loading-text">Sistemul procesează cererea utilizând modelul selectat...</p>
           </div>
         )}
 
         {rezultat && !incarcare && (
-          <div className="dashboard-layout" style={{ gridTemplateColumns: activa === 'monumente' && termenCautareHarta && !rezultat.includes("color:red") ? '1fr 1fr' : '1fr' }}>
-            <div className="text-panel">
+          <div className={`dashboard-layout${areHarta ? ' dashboard-layout--split' : ''}`}>
+            <div className="text-panel rezultat-animat">
               <div dangerouslySetInnerHTML={{ __html: rezultat }} />
             </div>
             
-            {activa === 'monumente' && termenCautareHarta && !rezultat.includes("color:red") && (
-              <div className="map-panel" style={{ height: '380px', position: 'sticky', top: '20px' }}>
+            {areHarta && (
+              <div className="map-panel">
                 <iframe
                   title="Google Maps Location"
                   width="100%"
                   height="100%"
-                  style={{ border: 0, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                  className="map-iframe"
                   loading="lazy"
                   allowFullScreen
                   src={`https://maps.google.com/maps?q=${encodeURIComponent(termenCautareHarta)}&t=&z=16&ie=UTF8&iwloc=B&output=embed`}

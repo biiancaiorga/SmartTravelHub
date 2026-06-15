@@ -25,13 +25,16 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
+/* ── Layout general ── */
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
 }
 
+/* ── Header ── */
 .app-header {
+  position: relative;
   text-align: center;
   margin-bottom: 48px;
 }
@@ -48,6 +51,57 @@ body {
   font-size: 1.1rem;
 }
 
+.header-controls {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-theme-toggle {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+}
+
+.btn-theme-toggle:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-reset {
+  background: #ea4335;
+  border: none;
+  border-radius: 20px;
+  padding: 0 14px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(234, 67, 53, 0.2);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btn-reset:hover {
+  background: #c62828;
+  box-shadow: 0 4px 10px rgba(234, 67, 53, 0.3);
+}
+
+/* ── Navigare tab-uri ── */
 .tabs-navigation {
   display: flex;
   justify-content: center;
@@ -80,9 +134,10 @@ body.dark-theme .tabs-navigation {
 .tab-btn.active {
   background: var(--bg-card);
   color: var(--text-main);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* ── Card principal ── */
 .main-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -91,8 +146,30 @@ body.dark-theme .tabs-navigation {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
+.card-title {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.card-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* ── Formulare ── */
 .input-group {
   margin-bottom: 20px;
+}
+
+.input-group--top {
+  margin-top: 24px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .form-input {
@@ -112,12 +189,19 @@ body.dark-theme .tabs-navigation {
   border-color: var(--accent);
 }
 
+.form-textarea {
+  min-height: 65px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+/* ── Upload imagine ── */
 .upload-zone {
   border: 2px dashed var(--border);
   padding: 40px;
   border-radius: 12px;
   text-align: center;
-  cursor: pointer;
   background: var(--bg-primary);
   transition: background 0.2s;
 }
@@ -130,6 +214,46 @@ body.dark-theme .upload-zone:hover {
   background: #1e293b;
 }
 
+.upload-input {
+  cursor: pointer;
+}
+
+.preview-container {
+  margin-top: 20px;
+}
+
+.preview-img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+}
+
+/* ── Selector motor AI ── */
+.engine-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.engine-btn {
+  flex: 1;
+  padding: 10px;
+}
+
+.engine-gemini-btn.active {
+  background: #e8f0fe !important;
+  color: #1a73e8 !important;
+  border: 2px solid #1a73e8 !important;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.2);
+}
+
+.engine-openai-btn.active {
+  background: #e6f7ed !important;
+  color: #10a37f !important;
+  border: 2px solid #10a37f !important;
+  box-shadow: 0 2px 8px rgba(16, 163, 127, 0.2);
+}
+
+/* ── Butoane principale ── */
 .btn-primary {
   width: 100%;
   padding: 14px;
@@ -153,29 +277,15 @@ body.dark-theme .upload-zone:hover {
   cursor: not-allowed;
 }
 
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 32px;
+.btn-primary--top {
+  margin-top: 20px;
 }
 
-.text-panel {
-  background: var(--bg-card);
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  line-height: 1.7;
+.btn-primary--small-top {
+  margin-top: 12px;
 }
 
-.map-panel {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  min-height: 400px;
-}
-
+/* ── Tag-uri rapide ── */
 .pastile-wrapper {
   display: flex;
   gap: 8px;
@@ -203,6 +313,19 @@ body.dark-theme .pastila-tag:hover {
   background: #334155;
 }
 
+/* ── Loading ── */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: var(--text-muted);
+}
+
 .spin {
   animation: rotate 1s linear infinite;
 }
@@ -212,16 +335,71 @@ body.dark-theme .pastila-tag:hover {
   to { transform: rotate(360deg); }
 }
 
+/* ── Rezultate ── */
+.eroare-text {
+  color: #dc2626;
+}
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rezultat-animat {
+  animation: fadeInUp 0.4s ease both;
+}
+
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.dashboard-layout--split {
+  grid-template-columns: 1fr 1fr;
+}
+
+.text-panel {
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  line-height: 1.7;
+}
+
+.map-panel {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  min-height: 400px;
+  height: 380px;
+  position: sticky;
+  top: 20px;
+}
+
+.map-iframe {
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Responsive ── */
 @media (max-width: 1024px) {
-  .dashboard-layout {
+  .dashboard-layout--split {
     grid-template-columns: 1fr;
   }
 
-  .app-header > div:last-child {
-    position: static !important;
+  .header-controls {
+    position: static;
     margin-top: 24px;
-    display: flex;
     justify-content: center;
     width: 100%;
   }
@@ -235,19 +413,4 @@ body.dark-theme .pastila-tag:hover {
   .app-header h1 {
     font-size: 1.75rem;
   }
-}
-
-
-.engine-gemini-btn.active {
-  background: #e8f0fe !important;
-  color: #1a73e8 !important;
-  border: 2px solid #1a73e8 !important;
-  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.2);
-}
-
-.engine-openai-btn.active {
-  background: #e6f7ed !important;
-  color: #10a37f !important;
-  border: 2px solid #10a37f !important;
-  box-shadow: 0 2px 8px rgba(16, 163, 127, 0.2);
 }

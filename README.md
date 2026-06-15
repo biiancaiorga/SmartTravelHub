@@ -18,7 +18,7 @@ După identificare, pe lângă textul generat, apare și un embed Google Maps ce
 
 ### Planificator de rută
 
-Utilizatorul completează destinația, numărul de zile, bugetul și preferințele de călătorie, iar AI-ul generează un ghid structurat pe zile. Există și câteva tag-uri rapide pentru stiluri comune: *Ritm relaxat*, *Istorie & Cultură*, *Familie*, *Locuri ascunse*; care sunt sugestii de idei.
+Utilizatorul completează destinația, numărul de zile, bugetul și preferințele de călătorie, iar AI-ul generează un ghid structurat pe zile. Există și câteva tag-uri rapide pentru stiluri comune: *Ritm relaxat*, *Istorie & Cultură*, *Familie*, *Locuri ascunse*; care se adaugă automat în câmpul de preferințe la click.
 
 ---
 
