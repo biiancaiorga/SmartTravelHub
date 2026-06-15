@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader, Sun, Moon, RotateCcw, Download } from 'lucide-react';
+import { Loader, Sun, Moon, RotateCcw, Download, GitCompare } from 'lucide-react';
 import EXIF from 'exif-js';
 import html2pdf from 'html2pdf.js';
 
@@ -17,6 +17,12 @@ function App() {
   const [indiciiText, setIndiciiText] = useState('');
   const [termenCautareHarta, setTermenCautareHarta] = useState('');
   const [motorActiv, setMotorActiv] = useState('');
+
+  // Stare mod comparatie
+  const [modComparatie, setModComparatie] = useState(false);
+  const [rezultatGemini, setRezultatGemini] = useState('');
+  const [rezultatOpenAI, setRezultatOpenAI] = useState('');
+  const [incarcareComparatie, setIncarcareComparatie] = useState(false);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('st_tema') === 'dark';
@@ -89,6 +95,9 @@ function App() {
     setBuget('');
     setStil('');
     setMotorActiv('');
+    setModComparatie(false);
+    setRezultatGemini('');
+    setRezultatOpenAI('');
     localStorage.removeItem('st_rezultat');
     localStorage.removeItem('st_indicii');
     localStorage.removeItem('st_harta');
@@ -106,6 +115,9 @@ function App() {
     setBuget('');
     setStil('');
     setIndiciiText('');
+    setModComparatie(false);
+    setRezultatGemini('');
+    setRezultatOpenAI('');
   };
 
   const cereItinerariu = async (e) => {
@@ -159,7 +171,6 @@ function App() {
       
       if (raspuns.ok && date.text) {
         setRezultat(date.text);
-        
         const potrivire = date.text.match(/<h3>(.*?)<\/h3>/);
         if (potrivire && potrivire[1]) {
           setTermenCautareHarta(potrivire[1]);
@@ -174,6 +185,74 @@ function App() {
     }
   };
 
+  const cereComparatieItinerariu = async (e) => {
+    e.preventDefault();
+    setIncarcareComparatie(true);
+    setRezultatGemini('');
+    setRezultatOpenAI('');
+    setRezultat('');
+
+    try {
+      const [raspunsGemini, raspunsOpenAI] = await Promise.all([
+        fetch('http://localhost:5000/api/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destinatie, zile, buget, stil })
+        }),
+        fetch('http://localhost:5000/api/openai/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destinatie, zile, buget, stil })
+        })
+      ]);
+
+      const dateGemini = await raspunsGemini.json();
+      const dateOpenAI = await raspunsOpenAI.json();
+
+      setRezultatGemini(dateGemini.text || '<p class="eroare-text">Eroare Gemini.</p>');
+      setRezultatOpenAI(dateOpenAI.text || '<p class="eroare-text">Eroare OpenAI.</p>');
+    } catch (err) {
+      setRezultatGemini('<p class="eroare-text">Eroare la conectarea cu serverul.</p>');
+      setRezultatOpenAI('<p class="eroare-text">Eroare la conectarea cu serverul.</p>');
+    } finally {
+      setIncarcareComparatie(false);
+    }
+  };
+
+  const cereComparatieRecunoastere = async () => {
+    if (!imagineBase64) return;
+    setIncarcareComparatie(true);
+    setRezultatGemini('');
+    setRezultatOpenAI('');
+    setRezultat('');
+
+    try {
+      const [raspunsGemini, raspunsOpenAI] = await Promise.all([
+        fetch('http://localhost:5000/api/recunoastere', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagineBase64, contextSuplimentar: indiciiText })
+        }),
+        fetch('http://localhost:5000/api/openai/recunoastere', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagineBase64, contextSuplimentar: indiciiText })
+        })
+      ]);
+
+      const dateGemini = await raspunsGemini.json();
+      const dateOpenAI = await raspunsOpenAI.json();
+
+      setRezultatGemini(dateGemini.text || '<p class="eroare-text">Eroare Gemini.</p>');
+      setRezultatOpenAI(dateOpenAI.text || '<p class="eroare-text">Eroare OpenAI.</p>');
+    } catch (err) {
+      setRezultatGemini('<p class="eroare-text">Eroare la conectarea cu serverul.</p>');
+      setRezultatOpenAI('<p class="eroare-text">Eroare la conectarea cu serverul.</p>');
+    } finally {
+      setIncarcareComparatie(false);
+    }
+  };
+
   const adaugaStilRapid = (textPastila) => {
     if (stil === '') {
       setStil(textPastila);
@@ -184,8 +263,6 @@ function App() {
 
   const exportPDF = () => {
     const element = document.getElementById('rezultat-continut');
-
-    // Wrapper temporar cu fundal alb si text negru pentru PDF
     const wrapper = document.createElement('div');
     wrapper.style.cssText = 'background:#ffffff; color:#0f172a; padding:20px; font-family:Arial,sans-serif; font-size:14px; line-height:1.7;';
     wrapper.innerHTML = element.innerHTML;
@@ -205,6 +282,7 @@ function App() {
   };
 
   const areHarta = activa === 'monumente' && termenCautareHarta && !rezultat.includes("eroare-text");
+  const areRezultatComparatie = rezultatGemini || rezultatOpenAI;
 
   return (
     <div className="app-container">
@@ -221,7 +299,7 @@ function App() {
             {isDarkMode ? <Sun size={20} color="#ffb703" /> : <Moon size={20} />}
           </button>
 
-          {rezultat && (
+          {(rezultat || areRezultatComparatie) && (
             <button onClick={reseteazaAplicatia} className="btn-reset">
               <RotateCcw size={16} /> Reset
             </button>
@@ -279,8 +357,20 @@ function App() {
               </div>
             </div>
 
-            <button onClick={cereRecunoastere} disabled={!imagineBase64 || incarcare || !motorActiv} className="btn-primary btn-primary--top">
+            <button onClick={cereRecunoastere} disabled={!imagineBase64 || incarcare || incarcareComparatie || !motorActiv} className="btn-primary btn-primary--top">
               {!motorActiv ? "Selectează un model AI de mai sus" : "Pornește Analiza Vizuală"}
+            </button>
+
+            <div className="comparatie-separator">
+              <span>sau</span>
+            </div>
+
+            <button
+              onClick={() => { setModComparatie(true); cereComparatieRecunoastere(); }}
+              disabled={!imagineBase64 || incarcare || incarcareComparatie}
+              className="btn-comparatie"
+            >
+              <GitCompare size={16} /> Compară Gemini vs GPT-4o
             </button>
           </div>
         ) : (
@@ -314,21 +404,37 @@ function App() {
                 </div>
               </div>
 
-              <button type="submit" disabled={incarcare || !motorActiv} className="btn-primary btn-primary--small-top">
+              <button type="submit" disabled={incarcare || incarcareComparatie || !motorActiv} className="btn-primary btn-primary--small-top">
                 {!motorActiv ? "Selectează un model AI de mai sus" : "Generează Structura Ghidului"}
               </button>
             </form>
+
+            <div className="comparatie-separator">
+              <span>sau</span>
+            </div>
+
+            <button
+              onClick={(e) => { setModComparatie(true); cereComparatieItinerariu(e); }}
+              disabled={!destinatie || !zile || !buget || incarcare || incarcareComparatie}
+              className="btn-comparatie"
+            >
+              <GitCompare size={16} /> Compară Gemini vs GPT-4o
+            </button>
           </div>
         )}
 
-        {incarcare && (
+        {(incarcare || incarcareComparatie) && (
           <div className="loading-container">
             <Loader className="spin" size={32} color="var(--accent)" />
-            <p className="loading-text">Sistemul procesează cererea utilizând modelul selectat...</p>
+            <p className="loading-text">
+              {incarcareComparatie
+                ? "Se procesează simultan ambele modele AI, vă rugăm așteptați..."
+                : "Sistemul procesează cererea utilizând modelul selectat..."}
+            </p>
           </div>
         )}
 
-        {rezultat && !incarcare && (
+        {rezultat && !incarcare && !modComparatie && (
           <div className={`dashboard-layout${areHarta ? ' dashboard-layout--split' : ''}`}>
             <div className="text-panel rezultat-animat">
               {activa === 'itinerariu' && (
@@ -352,6 +458,23 @@ function App() {
                 ></iframe>
               </div>
             )}
+          </div>
+        )}
+
+        {areRezultatComparatie && !incarcareComparatie && modComparatie && (
+          <div className="comparatie-layout rezultat-animat">
+            <div className="comparatie-panel comparatie-panel--gemini">
+              <div className="comparatie-header comparatie-header--gemini">
+                <span className="comparatie-badge">Google Gemini 2.5 Flash</span>
+              </div>
+              <div className="comparatie-continut" dangerouslySetInnerHTML={{ __html: rezultatGemini }} />
+            </div>
+            <div className="comparatie-panel comparatie-panel--openai">
+              <div className="comparatie-header comparatie-header--openai">
+                <span className="comparatie-badge">OpenAI GPT-4o</span>
+              </div>
+              <div className="comparatie-continut" dangerouslySetInnerHTML={{ __html: rezultatOpenAI }} />
+            </div>
           </div>
         )}
       </main>
