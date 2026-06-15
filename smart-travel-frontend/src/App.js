@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Loader, Sun, Moon, RotateCcw } from 'lucide-react';
+import { Loader, Sun, Moon, RotateCcw, Download } from 'lucide-react';
 import EXIF from 'exif-js';
+import html2pdf from 'html2pdf.js';
 
 function App() {
   const [activa, setActiva] = useState('monumente');
@@ -181,6 +182,28 @@ function App() {
     }
   };
 
+  const exportPDF = () => {
+    const element = document.getElementById('rezultat-continut');
+
+    // Wrapper temporar cu fundal alb si text negru pentru PDF
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'background:#ffffff; color:#0f172a; padding:20px; font-family:Arial,sans-serif; font-size:14px; line-height:1.7;';
+    wrapper.innerHTML = element.innerHTML;
+    document.body.appendChild(wrapper);
+
+    const opt = {
+      margin: [15, 20, 15, 20],
+      filename: `itinerariu-${destinatie || 'smarttravelhub'}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(wrapper).save().then(() => {
+      document.body.removeChild(wrapper);
+    });
+  };
+
   const areHarta = activa === 'monumente' && termenCautareHarta && !rezultat.includes("eroare-text");
 
   return (
@@ -308,7 +331,12 @@ function App() {
         {rezultat && !incarcare && (
           <div className={`dashboard-layout${areHarta ? ' dashboard-layout--split' : ''}`}>
             <div className="text-panel rezultat-animat">
-              <div dangerouslySetInnerHTML={{ __html: rezultat }} />
+              {activa === 'itinerariu' && (
+                <button onClick={exportPDF} className="btn-export-pdf">
+                  <Download size={16} /> Descarcă PDF
+                </button>
+              )}
+              <div id="rezultat-continut" dangerouslySetInnerHTML={{ __html: rezultat }} />
             </div>
             
             {areHarta && (
